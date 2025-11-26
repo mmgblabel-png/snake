@@ -36,3 +36,8 @@ app/build/
 
 # OS files
 .DS_Store
+
+# Google Play service account credentials (DO NOT COMMIT)
+*.play-credentials.json
+*service-account*.json
+snake-*.json
