@@ -870,11 +870,18 @@ private fun GameScreen() {
           onPurchase = { id ->
             val def = boosterCatalog().find { it.id == id } ?: return@BoosterShopModal
             if (coins < def.price) {
-              // insufficient coins snackbar could be added
+              // Show insufficient coins snackbar
+              LaunchedEffect(id + coins) {
+                snackbarHostState.showSnackbar("Niet genoeg munten voor ${def.title}")
+              }
             } else {
               coins -= def.price
               val inv = ownedBoosters.toMutableMap(); inv[id] = (inv[id] ?: 0) + 1
               ownedBoosters = inv; saveCoins(ctx, coins); saveBoosterInventory(ctx, ownedBoosters)
+              // Show success snackbar
+              LaunchedEffect(id + inv[id]!!) {
+                snackbarHostState.showSnackbar("Gekocht: ${def.title}")
+              }
             }
           },
           billingManager = billingManager,
@@ -1092,6 +1099,7 @@ private fun buildInitialSnake(extraSegments: Int): List<Cell> {
 private fun loadBest(ctx: Context) = ctx.getSharedPreferences("snake", Context.MODE_PRIVATE).getInt(PrefKeys.BEST, 0)
 private fun saveBest(ctx: Context, v: Int) { ctx.getSharedPreferences("snake", Context.MODE_PRIVATE).edit { putInt(PrefKeys.BEST, v) } }
 private fun saveRemoveAds(ctx: Context, v: Boolean) { ctx.getSharedPreferences("snake", Context.MODE_PRIVATE).edit { putBoolean(PrefKeys.REMOVE_ADS, v) } }
+private fun loadRemoveAds(ctx: Context): Boolean = ctx.getSharedPreferences("snake", Context.MODE_PRIVATE).getBoolean(PrefKeys.REMOVE_ADS, false)
 private fun saveBoosterCredits(ctx: Context, v: Int) { ctx.getSharedPreferences("snake", Context.MODE_PRIVATE).edit { putInt(PrefKeys.BOOSTER_CREDITS, v) } }
 private fun loadBoosterCredits(ctx: Context): Int = ctx.getSharedPreferences("snake", Context.MODE_PRIVATE).getInt(PrefKeys.BOOSTER_CREDITS, 0)
 private fun loadCoins(ctx: Context): Int = ctx.getSharedPreferences("snake", Context.MODE_PRIVATE).getInt(PrefKeys.COINS, 0)

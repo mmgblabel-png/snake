@@ -1,0 +1,53 @@
+name: Promote Play tracks
+
+on:
+  workflow_dispatch:
+    inputs:
+      versionCode:
+        description: 'Version code to promote'
+        required: true
+      fromTrack:
+        description: 'Source track (internal/beta)'
+        required: true
+        default: 'internal'
+      toTrack:
+        description: 'Destination track (beta/production)'
+        required: true
+        default: 'beta'
+      releaseStatus:
+        description: 'Release status (draft/inProgress/completed)'
+        required: true
+        default: 'inProgress'
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    env:
+      PLAY_JSON_B64: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON_B64 }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Decode Play service account JSON
+        if: env.PLAY_JSON_B64 != ''
+        shell: bash
+        run: |
+          echo "$PLAY_JSON_B64" | base64 -d > play-credentials.json
+      - name: Promote
+        if: env.PLAY_JSON_B64 != ''
+        run: |
+          ./gradlew promoteArtifacts \
+            -Pplay.serviceAccountCredentials=play-credentials.json \
+            -Pplay.promote.artifactVersionCodes=${{ github.event.inputs.versionCode }} \
+            -Pplay.promote.fromTrack=${{ github.event.inputs.fromTrack }} \
+            -Pplay.promote.toTrack=${{ github.event.inputs.toTrack }} \
+            -Pplay.promote.releaseStatus=${{ github.event.inputs.releaseStatus }} \
+            --no-daemon -s
+      - name: Skip (no credentials)
+        if: env.PLAY_JSON_B64 == ''
+        run: echo 'PLAY_SERVICE_ACCOUNT_JSON_B64 not configured.'
+
