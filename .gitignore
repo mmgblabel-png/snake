@@ -17,3 +17,22 @@ local.properties
 # Keystore and signing files (do NOT commit your real keystore or properties)
 keystore/*.jks
 keystore.properties
+
+# Build outputs and local artifacts
+app/release/
+app/release/*.aab
+app/build/
+/build/
+
+# IDE and editor
+/.idea/
+*.iml
+
+# Kotlin error logs
+/.kotlin/errors/
+
+# Gradle wrapper configs (keep wrapper but ignore temporary gradle caches)
+.gradle/
+
+# OS files
+.DS_Store
