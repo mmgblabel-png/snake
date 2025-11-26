@@ -303,7 +303,17 @@ private fun GameScreen() {
     val job = billingScope.launch { billingManager?.ownedRemoveAds?.collectLatest { owned -> removeAds = owned; saveRemoveAds(ctx, owned) } }
     val job2 = billingScope.launch { billingManager?.boosterCredits?.collectLatest { credits -> boosterCredits = credits } }
     val job3 = billingScope.launch { billingManager?.coins?.collectLatest { latest -> coins = latest } }
-    onDispose { job.cancel(); job2.cancel(); job3.cancel(); billingManager?.endConnection() }
+    val job4 = billingScope.launch {
+      billingManager?.events?.collectLatest { ev ->
+        when (ev) {
+          is BillingManager.BillingEvent.Success -> snackbarHostState.showSnackbar("Aankoop gelukt: ${ev.products.joinToString()} (+${ev.coinsAdded} munten)")
+          is BillingManager.BillingEvent.Pending -> snackbarHostState.showSnackbar("Aankoop in behandeling…")
+          is BillingManager.BillingEvent.Failure -> snackbarHostState.showSnackbar("Aankoop mislukt (${ev.code})")
+          is BillingManager.BillingEvent.Canceled -> snackbarHostState.showSnackbar("Aankoop geannuleerd")
+        }
+      }
+    }
+    onDispose { job.cancel(); job2.cancel(); job3.cancel(); billingManager?.endConnection(); job4.cancel() }
   }
 
   // Observe Play Games authentication state once

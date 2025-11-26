@@ -16,9 +16,13 @@ import com.android.billingclient.api.QueryProductDetailsParams.Product
 import com.android.billingclient.api.QueryPurchasesParams
 import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.PendingPurchasesParams
+import com.android.billingclient.api.ConsumeParams
+import com.android.billingclient.api.ConsumeResponseListener
 import androidx.core.content.edit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -50,6 +54,16 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
 
     private val tag = "BillingManager"
     private val scope = CoroutineScope(Dispatchers.Main)
+
+    // Purchase events for UI feedback
+    sealed class BillingEvent {
+        data class Success(val products: List<String>, val coinsAdded: Int) : BillingEvent()
+        data class Pending(val products: List<String>) : BillingEvent()
+        data class Failure(val code: Int, val message: String?) : BillingEvent()
+        object Canceled : BillingEvent()
+    }
+    private val _events = MutableSharedFlow<BillingEvent>(extraBufferCapacity = 4)
+    val events: SharedFlow<BillingEvent> = _events
 
     private val billingClient: BillingClient = BillingClient.newBuilder(context)
         .setListener(this)
@@ -127,30 +141,49 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
     }
 
     override fun onPurchasesUpdated(billingResult: BillingResult, purchases: MutableList<Purchase>?) {
-        if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
-            purchases.forEach { handlePurchase(it) }
-        } else if (billingResult.responseCode == BillingClient.BillingResponseCode.USER_CANCELED) {
-            Log.d(tag, "Purchase canceled")
-        } else {
-            Log.w(tag, "Purchase failed: ${billingResult.debugMessage}")
+        when (billingResult.responseCode) {
+            BillingClient.BillingResponseCode.OK -> purchases?.forEach { handlePurchase(it) }
+            BillingClient.BillingResponseCode.USER_CANCELED -> {
+                Log.d(tag, "Purchase canceled")
+                _events.tryEmit(BillingEvent.Canceled)
+            }
+            else -> {
+                Log.w(tag, "Purchase failed: ${billingResult.debugMessage}")
+                _events.tryEmit(BillingEvent.Failure(billingResult.responseCode, billingResult.debugMessage))
+            }
         }
     }
 
     private fun handlePurchase(purchase: Purchase) {
-        if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED) return
-        if (!purchase.isAcknowledged) acknowledgePurchase(purchase)
-        grantProducts(purchase.products)
+        when (purchase.purchaseState) {
+            Purchase.PurchaseState.PENDING -> {
+                _events.tryEmit(BillingEvent.Pending(purchase.products))
+            }
+            Purchase.PurchaseState.PURCHASED -> {
+                val products = purchase.products
+                val hasConsumable = products.any { it == PRODUCT_BOOSTER_PACK || it == PRODUCT_SUPER_BOOST }
+                val coinsAdded = grantProducts(products)
+                // For non-consumable remove_ads, acknowledge; for consumables, consume to allow repurchase
+                if (hasConsumable) {
+                    consumePurchase(purchase)
+                } else if (!purchase.isAcknowledged) {
+                    acknowledgePurchase(purchase)
+                }
+                _events.tryEmit(BillingEvent.Success(products, coinsAdded))
+            }
+            else -> { /* UNSPECIFIED_STATE: ignore */ }
+        }
     }
 
-    private fun grantProducts(products: List<String>) {
-        if (products.isEmpty()) return
+    private fun grantProducts(products: List<String>): Int {
+        if (products.isEmpty()) return 0
         if (PRODUCT_REMOVE_ADS in products) {
             _ownedRemoveAds.value = true
             saveRemoveAds(context, true)
         }
         val packs = products.count { it == PRODUCT_BOOSTER_PACK }
         val supers = products.count { it == PRODUCT_SUPER_BOOST }
-        if (packs == 0 && supers == 0) return
+        if (packs == 0 && supers == 0) return 0
         // Load processed counts to avoid double-award if purchase objects replay
         val (procPacks, procSupers) = loadProcessedCounts()
         val newPacks = packs // single purchase list corresponds to one purchase -> treat all as new
@@ -166,6 +199,25 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
             val coinsAdd = packs * COINS_PER_BOOSTER_PACK + supers * COINS_PER_SUPER_BOOST
             if (coinsAdd > 0) adjustCoins(coinsAdd)
             saveProcessedCounts(procPacks + newPacks, procSupers + newSupers)
+            return coinsAdd
+        }
+        return 0
+    }
+
+    private fun consumePurchase(purchase: Purchase) {
+        try {
+            val params = ConsumeParams.newBuilder()
+                .setPurchaseToken(purchase.purchaseToken)
+                .build()
+            billingClient.consumeAsync(params, ConsumeResponseListener { result, token ->
+                if (result.responseCode != BillingClient.BillingResponseCode.OK) {
+                    Log.w(tag, "Consume failed: ${result.debugMessage}")
+                } else {
+                    Log.d(tag, "Consumed purchase token=$token")
+                }
+            })
+        } catch (t: Throwable) {
+            Log.w(tag, "Consume exception", t)
         }
     }
 
