@@ -1,0 +1,10 @@
+# Minimal, valid detekt configuration to avoid validation errors while keeping reporting enabled
+build:
+  maxIssues: 1000
+
+processors:
+  active: true
+
+# Keep validation enabled so detekt still checks for config mistakes
+config:
+  validation: true

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- API 27+ navigation bar divider made transparent for cleaner edge-to-edge -->
+    <style name="Theme.SnakeCompose" parent="Theme.Material3.DayNight">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <!-- Removed status/navigation/divider color items; now controlled in code -->
+    </style>
+</resources>

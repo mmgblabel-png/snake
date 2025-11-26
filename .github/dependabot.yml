@@ -1,0 +1,25 @@
+version: 2
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    rebase-strategy: "auto"
+    labels:
+      - "dependencies"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    rebase-strategy: "auto"
+    labels:
+      - "dependencies"
+  - package-ecosystem: "gradle"
+    # Separate block to only create PRs for security updates
+    directory: "/"
+    schedule:
+      interval: "daily"
+    # note: some Dependabot servers accept `security-updates` flags; this marks intent to only create security PRs
+    security-updates: "only"

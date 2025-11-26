@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">SnakeV1</string>
+    <!-- AdMob production IDs (provided by user) -->
+    <string name="admob_app_id">ca-app-pub-5774719445750198~9307094124</string>
+    <string name="admob_banner_ad_unit_id">ca-app-pub-5774719445750198/3626405922</string>
+    <string name="admob_interstitial_id">ca-app-pub-5774719445750198/2346496733</string>
+    <string name="admob_native_ad_unit_id">ca-app-pub-5774719445750198/9672939522</string>
+    <!-- Keep Google test interstitial for optional dev diagnostics -->
+    <string name="admob_interstitial_test">ca-app-pub-3940256099942544/1033173712</string>
+    <string name="play_games_oauth_client_id">865257429689-n4bs2spd4ghrjd7m9uign38a3oe82uce.apps.googleusercontent.com</string>
+    <!-- Play Games Services IDs (replace placeholders with real IDs when available) -->
+    <string name="play_games_leaderboard_high_score_id">CgkIubXyqpcZEAIQAQ</string>
+    <string name="achievement_first_game_id">CgkIubXyqpcZEAIQAg</string>
+    <string name="achievement_100_score_id">CgkIubXyqpcZEAIQAw</string>
+    <string name="achievement_long_snake_id">CgkIubXyqpcZEAIQBA</string>
+    <string name="achievement_500_score_id">CgkIubXyqpcZEAIQBQ</string>
+    <string name="achievement_50_food_id">CgkIubXyqpcZEAIQBg</string>
+    <string name="achievement_10_combo_id">CgkIubXyqpcZEAIQBw</string>
+</resources>

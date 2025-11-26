@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.SnakeCompose" parent="Theme.Material3.DayNight">
+        <!-- Cutout handling moved to runtime (WindowManager.LayoutParams) to avoid deprecated constant usage -->
+    </style>
+</resources>

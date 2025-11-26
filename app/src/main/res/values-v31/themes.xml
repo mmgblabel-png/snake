@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+ (API 31) overrides for splash -->
+    <style name="Theme.SnakeCompose" parent="Theme.Material3.DayNight">
+        <item name="android:windowSplashScreenBackground">@color/snake_bg</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <!-- System bar colors removed; handled by enableEdgeToEdge(SystemBarStyle) -->
+    </style>
+</resources>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App base theme for Compose using Material 3 DayNight base style -->
+    <style name="Theme.SnakeCompose" parent="Theme.Material3.DayNight">
+        <!-- Disable legacy action bar/title (NoActionBar equivalent) -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+</resources>

@@ -1,0 +1,8 @@
+<resources>
+    <!-- Debug build uses the same provided IDs unless you prefer test IDs.
+         Keep here to ensure debug builds exercise your real placements. -->
+    <string name="admob_app_id">ca-app-pub-5774719445750198~9307094124</string>
+    <string name="admob_banner_ad_unit_id">ca-app-pub-5774719445750198/3626405922</string>
+    <string name="admob_interstitial_id">ca-app-pub-5774719445750198/2346496733</string>
+    <string name="admob_native_ad_unit_id">ca-app-pub-5774719445750198/9672939522</string>
+</resources>
