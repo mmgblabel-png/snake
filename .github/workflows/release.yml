@@ -48,6 +48,41 @@ jobs:
             -Pplay.serviceAccountCredentials=play-credentials.json \
             --no-daemon -s
 
+      - name: Parse versionCode from app/build.gradle.kts
+        if: env.PLAY_JSON_B64 != ''
+        shell: bash
+        run: |
+          VC=$(grep -E "versionCode\s*=\s*[0-9]+" app/build.gradle.kts | sed -E 's/.*versionCode\s*=\s*([0-9]+).*/\1/' | head -n1)
+          echo "VERSION_CODE=$VC" >> "$GITHUB_ENV"
+          echo "Parsed VERSION_CODE=$VC"
+
+      - name: Promote Internal -> Beta (inProgress)
+        if: env.PLAY_JSON_B64 != ''
+        run: |
+          ./gradlew promoteArtifacts \
+            -Pplay.serviceAccountCredentials=play-credentials.json \
+            -Pplay.promote.artifactVersionCodes=${{ env.VERSION_CODE }} \
+            -Pplay.promote.fromTrack=internal \
+            -Pplay.promote.toTrack=beta \
+            -Pplay.promote.releaseStatus=inProgress \
+            --no-daemon -s
+
+      - name: Find AAB path
+        if: env.PLAY_JSON_B64 != ''
+        shell: bash
+        run: |
+          AAB=$(ls -1 app/build/outputs/bundle/release/*.aab 2>/dev/null | head -n1)
+          echo "AAB_PATH=$AAB" >> "$GITHUB_ENV"
+          echo "AAB_PATH=$AAB"
+
+      - name: Upload to Internal App Sharing
+        if: env.PLAY_JSON_B64 != ''
+        run: |
+          ./gradlew uploadInternalSharing \
+            -Pplay.serviceAccountCredentials=play-credentials.json \
+            -Pplay.internalSharing.artifact=${{ env.AAB_PATH }} \
+            --no-daemon -s
+
       - name: Skip publish (no credentials configured)
         if: env.PLAY_JSON_B64 == ''
-        run: echo "PLAY_SERVICE_ACCOUNT_JSON_B64 secret not set; skipping publish."
+        run: echo "PLAY_SERVICE_ACCOUNT_JSON_B64 secret not set; skipping publish/promote/upload."
