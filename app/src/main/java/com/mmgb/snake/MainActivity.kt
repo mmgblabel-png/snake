@@ -63,15 +63,12 @@ class MainActivity : ComponentActivity() {
             navigationBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT)
         )
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        // Set display cutout mode for edge-to-edge. Android 15 deprecates SHORT_EDGES; ALWAYS is safe for full-screen games.
+        // Set display cutout mode for edge-to-edge. Android 15 deprecates SHORT_EDGES; use ALWAYS for full-screen games.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             window.attributes = window.attributes.apply {
                 try {
-                    layoutInDisplayCutoutMode = when {
-                        Build.VERSION.SDK_INT >= 30 -> WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
-                        // Only use SHORT_EDGES for legacy API 28-29; Android 15 deprecates it.
-                        else -> WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
-                    }
+                    // Use ALWAYS to avoid relying on the deprecated SHORT_EDGES parameter on newer Android versions.
+                    layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
                 } catch (_: Throwable) {}
             }
         }

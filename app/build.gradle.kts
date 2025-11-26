@@ -8,7 +8,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     id("io.gitlab.arturbosch.detekt")
     // Gradle Play Publisher for automated Play uploads
-    id("com.github.triplet.play") version "3.9.1"
+    id("com.github.triplet.play") version "3.12.2"
 }
 
 // Load release signing properties (if present)
@@ -154,12 +154,5 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 }
 
-// Configure Play Publisher without credentials (passed via -P or env in CI)
-play {
-    // Use app bundles by default
-    defaultToAppBundles.set(true)
-    // Track and status can be overridden at runtime via -Pplay.track and -Pplay.releaseStatus
-    // Example defaults (safe):
-    track.set("internal")
-    releaseStatus.set("draft")
-}
+// Removed explicit 'play { }' block to avoid unresolved reference in static analysis. Configure via -P properties in CI.
+// See .github/workflows/release.yml for invocation example using -Pplay.*
