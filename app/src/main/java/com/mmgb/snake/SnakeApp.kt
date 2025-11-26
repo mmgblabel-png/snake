@@ -469,7 +469,12 @@ private fun GameScreen() {
       if (mode=="time" && running && !gameOver && now - lastSec >= 1000) {
         lastSec = now; timeLeft = max(0, timeLeft - 1); if (timeLeft==0) gameOver = true
       }
-      val interval = currentInterval(speedIdx.coerceIn(0,4), effectUntil)
+      val interval = run {
+        val base = currentInterval(speedIdx.coerceIn(0,4), effectUntil)
+        // Dynamic difficulty: up to 30% faster as score rises (smoothly)
+        val factor = (1f - (score / 800f)).coerceIn(0.7f, 1f)
+        (base * factor).roundToLong().coerceAtLeast(40L)
+      }
       if (running && !gameOver && now - lastTick >= interval) {
         tickCount++
         lastTick = now
@@ -870,18 +875,14 @@ private fun GameScreen() {
           onPurchase = { id ->
             val def = boosterCatalog().find { it.id == id } ?: return@BoosterShopModal
             if (coins < def.price) {
-              // Show insufficient coins snackbar
-              LaunchedEffect(id + coins) {
-                snackbarHostState.showSnackbar("Niet genoeg munten voor ${def.title}")
-              }
+              // Show insufficient coins snackbar using coroutine scope (not a composable context)
+              billingScope.launch { snackbarHostState.showSnackbar("Niet genoeg munten voor ${def.title}") }
             } else {
               coins -= def.price
               val inv = ownedBoosters.toMutableMap(); inv[id] = (inv[id] ?: 0) + 1
               ownedBoosters = inv; saveCoins(ctx, coins); saveBoosterInventory(ctx, ownedBoosters)
-              // Show success snackbar
-              LaunchedEffect(id + inv[id]!!) {
-                snackbarHostState.showSnackbar("Gekocht: ${def.title}")
-              }
+              // Show success snackbar via coroutine
+              billingScope.launch { snackbarHostState.showSnackbar("Gekocht: ${def.title}") }
             }
           },
           billingManager = billingManager,
@@ -1338,7 +1339,7 @@ private fun BoosterShopModal(
         }
       }
       Divider()
-      Text("Koop munten met echt geld:", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+      Text("Koop munten met echt geld:", fontWeight = FontWeight.Medium, fontSize = 14.sp)
       if (loading) Text("Laden...")
       error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
       if (!loading) {
