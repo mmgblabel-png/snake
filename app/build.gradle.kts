@@ -27,8 +27,8 @@ android {
         applicationId = "com.mmgb.snake"
         minSdk = 23
         targetSdk = 36
-        versionCode = 7 // production release versie7
-        versionName = "7.1" // serie1 interpreted as minor .1
+        versionCode = 71
+        versionName = "7.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -64,14 +64,19 @@ android {
                 }
             }
         }
+        debug {
+            // Ensure debug runs fast
+            isMinifyEnabled = false
+        }
     }
     // Ensure Java compilation uses 17 (matches Kotlin jvmTarget)
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    buildFeatures { compose = true }
-    kotlinOptions { jvmTarget = "17" }
+    kotlinOptions {
+        jvmTarget = "17"
+    }
     packaging { resources.excludes += "/META-INF/{AL2.0,LGPL2.1}" }
 }
 
@@ -152,6 +157,9 @@ dependencies {
     implementation(libs.google.ump)
 
     implementation(libs.kotlinx.serialization.json)
+    implementation("com.google.android.gms:play-services-ads:23.1.0")
+    implementation("com.google.android.ump:user-messaging-platform:2.2.0")
+    implementation("com.android.billingclient:billing-ktx:6.0.1")
 }
 
 // Removed explicit 'play { }' block to avoid unresolved reference in static analysis. Configure via -P properties in CI.

@@ -3,6 +3,9 @@
 
 # Preserve Google Mobile Ads classes (recommended minimal set)
 -keep class com.google.android.gms.ads.** { *; }
+-keep class com.google.android.gms.ads.initialization.** { *; }
+-keep class com.google.ads.** { *; }
+-keep class com.google.android.gms.ads.identifier.** { *; }
 -dontwarn com.google.android.gms.ads.**
 
 # Preserve Play Billing client models
@@ -26,3 +29,24 @@
 # Keep Google Mobile Ads and Play Games classes (avoid reflection related issues)
 -keep class com.google.android.gms.ads.** { *; }
 -keep class com.google.android.gms.games.** { *; }
+
+# Keep UMP consent form / info
+-keep class com.google.android.ump.** { *; }
+
+# Keep Google Play Integrity
+-keep class com.google.android.play.core.integrity.** { *; }
+
+# Preserve Kotlin serialization models
+-keep class kotlinx.serialization.** { *; }
+-keepclassmembers class ** {
+    @kotlinx.serialization.Serializable *;
+}
+
+# Keep native ad view / mediation assets if any XML refers
+-keep class com.google.android.gms.ads.nativead.** { *; }
+
+# Don't warn on missing optional adapters
+-dontwarn com.google.ads.**
+-dontwarn com.google.android.gms.ads.**
+-dontwarn com.google.android.ump.**
+-dontwarn com.android.billingclient.api.**
