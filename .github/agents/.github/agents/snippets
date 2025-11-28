@@ -1,0 +1,20 @@
+# Release Playbook
+
+1) Collect commits since last tag:
+   - `git describe --tags --abbrev=0` → previous tag
+   - `git log <prev>..HEAD --pretty=format:"- %s"`
+
+2) Draft "What's new":
+   - **🎮 Features**
+   - **⚡ Improvements**
+   - **🐞 Fixes**
+   - **🔧 Tech**
+
+3) Suggest version bump:
+   - MAJOR if breaking gameplay or API, else MINOR for features, PATCH for fixes.
+
+4) Build:
+   - `./gradlew :androidApp:assembleRelease` (or Debug if CI only)
+   - Ensure icons/feature graphic present.
+
+5) Output `RELEASE_NOTES.md` and print summary in PR body.

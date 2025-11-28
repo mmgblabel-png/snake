@@ -38,7 +38,8 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*','**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-
+      - name: Ensure gradlew is executable
+        run: chmod +x ./gradlew
       - name: Build and publish to Internal track (draft)
         if: env.PLAY_JSON_B64 != ''
         run: |
