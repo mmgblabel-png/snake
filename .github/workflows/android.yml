@@ -3,6 +3,8 @@ name: Android CI
 on:
   push:
     branches: [ main ]
+    tags:
+      - 'v*'
   pull_request:
     branches: [ main ]
   workflow_dispatch:
@@ -44,7 +46,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     needs: build
-    if: ${{ github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -65,4 +67,3 @@ jobs:
       - name: Publish to Play (internal)
         if: ${{ hashFiles('service_account.json') != '' }}
         run: ./gradlew :app:publishRelease --stacktrace -Pplay.serviceAccountJson=service_account.json -Pplay.track=internal -Pplay.releaseStatus=draft
-
